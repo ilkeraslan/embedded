@@ -1,5 +1,3 @@
-\ Contains utility WORDS
-
 \ GPIO utils
 HEX
 FE000000 CONSTANT BASE
@@ -9,6 +7,7 @@ BASE 200008 + CONSTANT GPFSEL2
 BASE 200040 + CONSTANT GPEDS0
 BASE 20001C + CONSTANT GPSET0
 BASE 200028 + CONSTANT GPCLR0
+BASE 200034 + CONSTANT GPLEV0
 BASE 200058 + CONSTANT GPFEN0
 
 \ Applies Logical Left Shift of 1 bit on the given value
@@ -16,6 +15,22 @@ BASE 200058 + CONSTANT GPFEN0
 \ Usage: 2 MASK
   \ 2(BINARY 0010) -> 4(BINARY 0100)
 : MASK 1 SWAP LSHIFT ;
+
+\ Sets the given GPIO pin to HIGH if configured as output
+\ Usage: 12 HIGH -> Sets the GPIO-18 to HIGH
+: HIGH 
+  MASK GPSET0 ! ;
+
+\ Clears the given GPIO pin if configured as output
+\ Usage: 12 LOW -> Clears the GPIO-18
+: LOW 
+  MASK GPCLR0 ! ;
+
+\ Tests the actual value of GPIO pins 0..31
+\ 0 -> GPIO pin n is low
+\ 1 -> GPIO pin n is high
+\ Usage: 12 TPIN (Test GPIO-18)
+: TPIN GPLEV0 @ SWAP RSHIFT 1 AND ;
 \ 3 Broadcom Serial Controller (BSC) masters exist, we use the 2nd one
 \ BSC1 register address: 0xFE804000 (Because our model is Rpi 4B)
 \ To use the I2C interface add the following offsets to BCS1 register address
@@ -88,18 +103,18 @@ BASE 200058 + CONSTANT GPFEN0
   SET_SLAVE
   STORE_DATA
   SEND ;
-\ For each column send an output
-\ For each row control the values
+\ For each row send an output
+\ For each column control the values
 \ If event detection bit is read we found the pressed key
   \ in row-column format
-\ GPIO-18 -> Row-1
-\ GPIO-23 -> Row-2
-\ GPIO-24 -> Row-3
-\ GPIO-25 -> Row-4
-\ GPIO-16 -> Column-1
-\ GPIO-22 -> Column-2
-\ GPIO-27 -> Column-3
-\ GPIO-10 -> Column-4
+\ GPIO-18 -> Row-1 (1-2-3-A)
+\ GPIO-23 -> Row-2 (4-5-6-B)
+\ GPIO-24 -> Row-3 (7-8-9-C)
+\ GPIO-25 -> Row-4 (*-0-#-D)
+\ GPIO-16 -> Column-1 (A-B-C-D)
+\ GPIO-22 -> Column-2 (3-6-9-#)
+\ GPIO-27 -> Column-3 (2-5-8-0)
+\ GPIO-10 -> Column-4 (1-4-7-*)
 
 \ Enables falling edge detection for the pins which control the rows
   \ by writing 1 into corresponding pin positions (GPIO-18, 23, 24, 25)
@@ -107,7 +122,7 @@ BASE 200058 + CONSTANT GPFEN0
 : SETUP_ROWS 
   3840000 GPFEN0 ! ;
 
-\ Row pins are input, column pins are output 
+\ Row pins are output, column pins are input 
 \ GPFSEL1 field is used to define the operation of the pins GPIO-10 - GPIO-19
 \ GPFSEL2 field is used to define the operation of the pins GPIO-20 - GPIO-29
 \ Each 3-bits of the GPFSEL represents a GPIO pin
@@ -116,28 +131,50 @@ BASE 200058 + CONSTANT GPFEN0
 \ In order to address GPIO-22, GPIO-23, GPIO-24, GPIO-25, and GPIO-27 we should operate on the bits position 
   \ 8-7-6(GPIO-22), 11-10-9(GPIO-23), 14-13-12(GPIO-24), 17-16-15(GPIO-25), and 23-22-21(GPIO-27)
   \ storing the value into GPFSEL2
-\ GPIO-18 is input -> 000
-\ GPIO-23 is input -> 000
-\ GPIO-24 is input -> 000
-\ GPIO-25 is input -> 000
-\ GPIO-16 is output -> 001
-\ GPIO-22 is output -> 001
-\ GPIO-27 is output -> 001
-\ GPIO-10 is output -> 001
+\ GPIO-18 is output -> 001
+\ GPIO-23 is output -> 001
+\ GPIO-24 is output -> 001
+\ GPIO-25 is output -> 001
+\ GPIO-16 is input -> 000
+\ GPIO-22 is input -> 000
+\ GPIO-27 is input -> 000
+\ GPIO-10 is input -> 000
 \ As a result we should write 
-\   (0000 0000 0000 0100 0000 0000 0000 0001) into GPFSEL1_REGISTER_ADDRESS IN HEX(0x40001)
-\   (0000 0000 0010 0000 0000 0000 0100 0000) into GPFSEL2_REGISTER_ADDRESS IN HEX(0x200040)
+\   (0001 0000 0000 0000 0000 0000 0000) into GPFSEL1_REGISTER_ADDRESS IN HEX(0x1000000)
+\   (0000 1001 0010 0000 0000) into GPFSEL2_REGISTER_ADDRESS IN HEX(0x9200)
 : SETUP_IO 
-  40001 GPFSEL1 @ OR GPFSEL1 ! 
-  200040 GPFSEL2 @ OR GPFSEL2 ! ;
+  1000000 GPFSEL1 @ OR GPFSEL1 ! 
+  9200 GPFSEL2 @ OR GPFSEL2 ! ;
 
-\ Clear GPIO-16, GPIO-22, GPIO-27, and GPIO-10 using GPCLR0 register
+\ Clear GPIO-18, GPIO-23, GPIO-24, and GPIO-25 using GPCLR0 register
   \ by writing 1 into the corresponding positions
-\ (0x8410400) is (0000 1000 0100 0001 0000 0100 0000 0000) in BINARY
-: CLEAR_COLUMNS 
-  8410400 GPCLR0 @ OR GPCLR0 ! ;
+\ (0x3840000) is (0011 1000 0100 0000 0000 0000 0000) in BINARY
+: CLEAR_ROWS 
+  3840000 GPCLR0 ! ;
 
 : SETUP_KEYPAD 
   SETUP_ROWS 
   SETUP_IO 
-  CLEAR_COLUMNS ;
+  CLEAR_ROWS ;
+
+: PRESSED 
+  TPIN 1 = IF 1 ELSE 0 THEN ;
+\ TODO: Test this
+: WELCOME 
+  5D >I2C 
+  58 >I2C 
+  7D >I2C 
+  78 >I2C 
+   ;
+
+\ TODO: Test this
+: SETUP_LCD 
+  0C >I2C 
+  08 >I2C 
+  2C >I2C 
+  28 >I2C 
+   ;
+
+: SETUP 
+  SETUP_I2C 
+  SETUP_KEYPAD ;
