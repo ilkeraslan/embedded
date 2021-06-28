@@ -62,7 +62,7 @@
 : SEND 
   8080 BASE 804000 + ! ;
 
-\ Write 1 byte at a time
+\ The main word to write 1 byte at a time
 : >I2C
   RESET_S
   RESET_FIFO
