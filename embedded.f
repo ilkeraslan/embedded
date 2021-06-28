@@ -31,6 +31,9 @@ BASE 200058 + CONSTANT GPFEN0
 \ 1 -> GPIO pin n is high
 \ Usage: 12 TPIN (Test GPIO-18)
 : TPIN GPLEV0 @ SWAP RSHIFT 1 AND ;
+
+: DELAY 
+  BEGIN 1 - DUP 0 = UNTIL DROP ;
 \ 3 Broadcom Serial Controller (BSC) masters exist, we use the 2nd one
 \ BSC1 register address: 0xFE804000 (Because our model is Rpi 4B)
 \ To use the I2C interface add the following offsets to BCS1 register address
@@ -159,22 +162,64 @@ BASE 200058 + CONSTANT GPFEN0
 
 : PRESSED 
   TPIN 1 = IF 1 ELSE 0 THEN ;
-\ TODO: Test this
 : WELCOME 
-  5D >I2C 
-  58 >I2C 
-  7D >I2C 
-  78 >I2C 
-   ;
+  5D >I2C 1000 DELAY 
+  58 >I2C 1000 DELAY 
+  7D >I2C 1000 DELAY 
+  78 >I2C 1000 DELAY
 
-\ TODO: Test this
+  4D >I2C 1000 DELAY
+  48 >I2C 1000 DELAY
+  5D >I2C 1000 DELAY
+  58 >I2C 1000 DELAY
+
+  4D >I2C 1000 DELAY
+  48 >I2C 1000 DELAY
+  CD >I2C 1000 DELAY
+  D8 >I2C 1000 DELAY
+
+  4D >I2C 1000 DELAY
+  48 >I2C 1000 DELAY
+  3D >I2C 1000 DELAY
+  38 >I2C 1000 DELAY
+
+  4D >I2C 1000 DELAY
+  48 >I2C 1000 DELAY
+  FD >I2C 1000 DELAY
+  F8 >I2C 1000 DELAY 
+
+  4D >I2C 1000 DELAY
+  48 >I2C 1000 DELAY
+  DD >I2C 1000 DELAY
+  D8 >I2C 1000 DELAY 
+
+  4D >I2C 1000 DELAY
+  48 >I2C 1000 DELAY
+  5D >I2C 1000 DELAY
+  58 >I2C 1000 DELAY
+  ;
+
+\ Clears the screen
+: CLEAR
+  0C >I2C 1000 DELAY 
+  08 >I2C 1000 DELAY 
+  1C >I2C 1000 DELAY 
+  18 >I2C 1000 DELAY 
+  ;
+
+\ Shows a blinking cursor
 : SETUP_LCD 
-  0C >I2C 
-  08 >I2C 
-  2C >I2C 
-  28 >I2C 
-   ;
+  0C >I2C 1000 DELAY 
+  08 >I2C 1000 DELAY
+  2C >I2C 1000 DELAY 
+  28 >I2C 1000 DELAY 
+  ;
 
 : SETUP 
   SETUP_I2C 
-  SETUP_KEYPAD ;
+  SETUP_KEYPAD 
+  SETUP_LCD
+  WELCOME
+  10000 DELAY 
+  CLEAR
+  ;
