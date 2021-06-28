@@ -55,11 +55,35 @@
 : PRESSED 
   TPIN 1 = IF 1 ELSE 0 THEN ;
 
-: DETECT 
-  12 HIGH 4 0 DO  
-    10 PRESSED 1 = IF >A >I2C ELSE 
-    16 PRESSED 1 = IF >3 >I2C ELSE 
-    1B PRESSED 1 = IF >2 >I2C ELSE 
-    A PRESSED 1 = IF >1 >I2C 
+VARIABLE COUNTER
+
+: COUNTER++ 
+  COUNTER @ 1 + COUNTER !
+  ;
+
+\ Checks if a key of the given row is pressed emitting the corresponding value to LCD
+\ Duplicates the given GPIO pin number which controls the row in order to set it to HIGH and LOW
+\ Example usage -> 12 CHECK_ROW (Checks the first row)
+\               -> 17 CHECK_ROW (Checks the second row)
+\               -> 18 CHECK_ROW (Checks the third row)
+\               -> 19 CHECK_ROW (Checks the fourth row)
+\ TODO: Check row number to decide which char set we are refering to
+: CHECK_ROW
+  DUP 
+  HIGH  
+    10 PRESSED 1 = IF >A COUNTER++ ELSE 
+    16 PRESSED 1 = IF >3 COUNTER++ ELSE 
+    1B PRESSED 1 = IF >2 COUNTER++ ELSE 
+    A PRESSED 1 = IF >1 COUNTER++ 
     THEN THEN THEN THEN
-  LOOP ;
+  LOW 
+  ;
+
+: DETECT
+  0 COUNTER !
+  BEGIN 
+  12 CHECK_ROW
+  17 CHECK_ROW
+  18 CHECK_ROW
+  19 CHECK_ROW
+  COUNTER 3 =  UNTIL ;
