@@ -70,3 +70,24 @@
   SET_SLAVE
   STORE_DATA
   SEND ;
+
+\ Sends 4 most significant bits left of TOS
+: 4BM>LCD 
+  F0 AND DUP 
+  D OR >I2C 1000 DELAY
+  8 OR >I2C 1000 DELAY ;
+
+\ Sends 4 least significant bits left of TOS
+: 4BL>LCD 
+  F0 AND DUP 
+  D OR >I2C 1000 DELAY
+  8 OR >I2C 1000 DELAY ;
+
+: >LCDL
+ DUP 4 RSHIFT 4BL>LCD
+ 4BL>LCD ;
+
+: >LCDM
+ DUP F0 AND 4BM>LCD
+ F AND 4 LSHIFT 
+ 4BM>LCD ;

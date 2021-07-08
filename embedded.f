@@ -106,6 +106,32 @@ BASE 200058 + CONSTANT GPFEN0
   SET_SLAVE
   STORE_DATA
   SEND ;
+
+\ Sends 4 most significant bits left of TOS
+: 4BM>LCD 
+  F0 AND DUP 
+  D OR >I2C 1000 DELAY
+  8 OR >I2C 1000 DELAY ;
+
+\ Sends 4 least significant bits left of TOS
+: 4BL>LCD 
+  F0 AND DUP 
+  D OR >I2C 1000 DELAY
+  8 OR >I2C 1000 DELAY ;
+
+: >LCDL
+ DUP 4 RSHIFT 4BL>LCD
+ 4BL>LCD ;
+
+\ : >LCDM
+\  DUP F AND 4BM>LCD
+\  F AND 4 LSHIFT 
+\  4BM>LCD ;
+
+: >LCDM
+ DUP F0 AND 4BM>LCD
+ F AND 4 LSHIFT 
+ 4BM>LCD ;
 \ Contains various words to interact with the lcd
 
 \ TODO
@@ -274,6 +300,7 @@ VARIABLE COUNTER
 \               -> 17 CHECK_ROW (Checks the second row)
 \               -> 18 CHECK_ROW (Checks the third row)
 \               -> 19 CHECK_ROW (Checks the fourth row)
+\ TODO: Check row number to decide which char set we are refering to
 : CHECK_ROW
   DUP 
   HIGH  
