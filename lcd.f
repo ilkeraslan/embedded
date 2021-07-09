@@ -2,31 +2,22 @@
 
 \ Prints "welcome" to screen
 : WELCOME
-  57 >LCDM 
-  45 >LCDM
-  4C >LCDM
-  43 >LCDM  
-  4F >LCDM
-  4D >LCDM
-  45 >LCDM ;
+  57 >LCD 
+  45 >LCD
+  4C >LCD
+  43 >LCD  
+  4F >LCD
+  4D >LCD
+  45 >LCD ;
 
 \ Clears the screen
 : CLEAR
-  0C >I2C 1000 DELAY 
-  08 >I2C 1000 DELAY 
-  1C >I2C 1000 DELAY 
-  18 >I2C 1000 DELAY ;
+  101 >LCD ;
 
 \ Moves the blinking cursor to second line
 : >LINE2
-  CC >I2C
-  C8 >I2C
-  0C >I2C
-  08 >I2C ;
+  1C0 >LCD ;
 
 \ Shows a blinking cursor at first line
 : SETUP_LCD 
-  0C >I2C 1000 DELAY 
-  08 >I2C 1000 DELAY
-  2C >I2C 1000 DELAY 
-  28 >I2C 1000 DELAY ;
+  102 >LCD ;

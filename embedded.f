@@ -109,14 +109,14 @@ DEVBASE 200058 + CONSTANT GPFEN0
 
 \ Sends 4 most significant bits left of TOS
 : 4BM>LCD 
-  F0 AND DUP 
-  D OR >I2C 1000 DELAY
+  F0 AND DUP ROT
+  D + OR >I2C 1000 DELAY
   8 OR >I2C 1000 DELAY ;
 
 \ Sends 4 least significant bits left of TOS
 : 4BL>LCD 
-  F0 AND DUP 
-  D OR >I2C 1000 DELAY
+  F0 AND DUP
+  D + OR >I2C 1000 DELAY
   8 OR >I2C 1000 DELAY ;
 
 : >LCDL
@@ -124,41 +124,42 @@ DEVBASE 200058 + CONSTANT GPFEN0
  4BL>LCD ;
 
 : >LCDM
- DUP F0 AND 4BM>LCD
- F AND 4 LSHIFT 
- 4BM>LCD ;
+  OVER OVER F0 AND 4BM>LCD
+  F AND 4 LSHIFT 4BM>LCD ;
+
+: IS_CMD 
+  DUP 8 RSHIFT 1 = ;
+
+\ Decides if we are sending a command or a data to I2C
+\ Commands has an extra 1 at the most significant bit compared to data
+\ An input like 101 >LCD would be considered a COMMAND to clear the screen
+\   wheres an input like 41 >LCD would be considered a DATA to send the A CHAR (41 in hex)
+\   to the screen
+: >LCD 
+  IS_CMD SWAP >LCDM ;
 \ Contains various words to interact with the lcd
 
 \ Prints "welcome" to screen
 : WELCOME
-  57 >LCDM 
-  45 >LCDM
-  4C >LCDM
-  43 >LCDM  
-  4F >LCDM
-  4D >LCDM
-  45 >LCDM ;
+  57 >LCD 
+  45 >LCD
+  4C >LCD
+  43 >LCD  
+  4F >LCD
+  4D >LCD
+  45 >LCD ;
 
 \ Clears the screen
 : CLEAR
-  0C >I2C 1000 DELAY 
-  08 >I2C 1000 DELAY 
-  1C >I2C 1000 DELAY 
-  18 >I2C 1000 DELAY ;
+  101 >LCD ;
 
 \ Moves the blinking cursor to second line
 : >LINE2
-  CC >I2C
-  C8 >I2C
-  0C >I2C
-  08 >I2C ;
+  1C0 >LCD ;
 
 \ Shows a blinking cursor at first line
 : SETUP_LCD 
-  0C >I2C 1000 DELAY 
-  08 >I2C 1000 DELAY
-  2C >I2C 1000 DELAY 
-  28 >I2C 1000 DELAY ;
+  102 >LCD ;
 \ For each row send an output
 \ For each column control the values
 \ If event detection bit is read we found the pressed key
@@ -222,7 +223,7 @@ VARIABLE COUNTER
   COUNTER @ 1 + COUNTER !
   ;
 
-\ Checks if a key of the given row is pressed emitting the corresponding value to LCD
+\ Checks if a key of the given row is pressed emitting the corresponding HEX value to LCD
 \ Duplicates the given GPIO pin number which controls the row in order to set it to HIGH and LOW
 \ Example usage -> 12 CHECK_ROW (Checks the first row)
 \               -> 17 CHECK_ROW (Checks the second row)
@@ -232,10 +233,10 @@ VARIABLE COUNTER
 : CHECK_ROW
   DUP 
   HIGH  
-    10 PRESSED 1 = IF >A COUNTER++ ELSE 
-    16 PRESSED 1 = IF >3 COUNTER++ ELSE 
-    1B PRESSED 1 = IF >2 COUNTER++ ELSE 
-    A PRESSED 1 = IF >1 COUNTER++ 
+    10 PRESSED 1 = IF 41 >LCD COUNTER++ ELSE 
+    16 PRESSED 1 = IF 33 >LCD COUNTER++ ELSE 
+    1B PRESSED 1 = IF 32 >LCD COUNTER++ ELSE 
+    A PRESSED 1 = IF 31 >LCD COUNTER++ 
     THEN THEN THEN THEN
   LOW 
   ;
@@ -247,7 +248,7 @@ VARIABLE COUNTER
   17 CHECK_ROW
   18 CHECK_ROW
   19 CHECK_ROW
-  COUNTER 3 =  UNTIL ;
+  COUNTER 10 =  UNTIL ;
 : SETUP 
   SETUP_I2C 
   SETUP_KEYPAD 

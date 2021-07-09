@@ -5,4 +5,4 @@
   WELCOME
   30000 DELAY 
   CLEAR
-  ;
+  DETECT ;

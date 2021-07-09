@@ -73,14 +73,14 @@
 
 \ Sends 4 most significant bits left of TOS
 : 4BM>LCD 
-  F0 AND DUP 
-  D OR >I2C 1000 DELAY
+  F0 AND DUP ROT
+  D + OR >I2C 1000 DELAY
   8 OR >I2C 1000 DELAY ;
 
 \ Sends 4 least significant bits left of TOS
 : 4BL>LCD 
-  F0 AND DUP 
-  D OR >I2C 1000 DELAY
+  F0 AND DUP
+  D + OR >I2C 1000 DELAY
   8 OR >I2C 1000 DELAY ;
 
 : >LCDL
@@ -88,6 +88,16 @@
  4BL>LCD ;
 
 : >LCDM
- DUP F0 AND 4BM>LCD
- F AND 4 LSHIFT 
- 4BM>LCD ;
+  OVER OVER F0 AND 4BM>LCD
+  F AND 4 LSHIFT 4BM>LCD ;
+
+: IS_CMD 
+  DUP 8 RSHIFT 1 = ;
+
+\ Decides if we are sending a command or a data to I2C
+\ Commands has an extra 1 at the most significant bit compared to data
+\ An input like 101 >LCD would be considered a COMMAND to clear the screen
+\   wheres an input like 41 >LCD would be considered a DATA to send the A CHAR (41 in hex)
+\   to the screen
+: >LCD 
+  IS_CMD SWAP >LCDM ;
