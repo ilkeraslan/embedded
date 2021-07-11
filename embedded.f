@@ -222,32 +222,67 @@ VARIABLE COUNTER
 : COUNTER++ 
   COUNTER @ 1 + COUNTER ! ;
 
-\ Checks if a key of the given row is pressed emitting the corresponding HEX value to LCD
+: EMITC1 
+  DUP 12 = IF 41 >LCD DROP ELSE 
+  DUP 17 = IF 42 >LCD DROP ELSE 
+  DUP 18 = IF 43 >LCD DROP ELSE 
+  19 = IF 44 >LCD 
+  THEN THEN THEN THEN ;
+
+: EMITC2 
+  DUP 12 = IF 33 >LCD DROP ELSE 
+  DUP 17 = IF 36 >LCD DROP ELSE 
+  DUP 18 = IF 39 >LCD DROP ELSE 
+  19 = IF 23 >LCD 
+  THEN THEN THEN THEN ;
+
+: EMITC3 
+  DUP 12 = IF 32 >LCD DROP ELSE 
+  DUP 17 = IF 35 >LCD DROP ELSE 
+  DUP 18 = IF 38 >LCD DROP ELSE 
+  19 = IF 30 >LCD 
+  THEN THEN THEN THEN ;
+
+: EMITC4 
+  DUP 12 = IF 31 >LCD DROP ELSE 
+  DUP 17 = IF 34 >LCD DROP ELSE 
+  DUP 18 = IF 37 >LCD DROP ELSE 
+  19 = IF 2A >LCD 
+  THEN THEN THEN THEN ;
+
+: EMIT_R
+  DUP 10 = IF DROP EMITC1 ELSE 
+  DUP 16 = IF DROP EMITC2 ELSE 
+  DUP 1B = IF DROP EMITC3 ELSE 
+  A = IF EMITC4 
+  THEN THEN THEN THEN ;
+
+: CHECK_CL 
+  DUP DUP
+    PRESSED 1 = IF 1000 DELAY 
+    PRESSED 0 = IF 1000 DELAY 
+      EMIT_R 
+      COUNTER++ 
+    ELSE DROP DROP 
+    THEN
+    ELSE DROP DROP DROP 
+  THEN ;
+
+\ Checks if a key of the given row is pressed, waits for it to be released
+\   and emits the corresponding HEX value to LCD
 \ Duplicates the given GPIO pin number which controls the row in order to set it to HIGH and LOW
 \ Example usage -> 12 CHECK_ROW (Checks the first row)
 \               -> 17 CHECK_ROW (Checks the second row)
 \               -> 18 CHECK_ROW (Checks the third row)
 \               -> 19 CHECK_ROW (Checks the fourth row)
-\ TODO: Check row number to decide which char set we are refering to
 : CHECK_ROW
-  DUP 
+  DUP DUP DUP DUP DUP 
   HIGH  
-    10 PRESSED 1 = IF 1000 DELAY 10 PRESSED 0 = IF 41 >LCD COUNTER++ THEN ELSE 
-    16 PRESSED 1 = IF 1000 DELAY 16 PRESSED 0 = IF 33 >LCD COUNTER++ THEN ELSE 
-    1B PRESSED 1 = IF 1000 DELAY 1B PRESSED 0 = IF 32 >LCD COUNTER++ THEN ELSE 
-    A PRESSED 1 = IF 1000 DELAY A PRESSED 0 = IF 31 >LCD COUNTER++ THEN
-    THEN THEN THEN THEN
+    10 CHECK_CL 
+    16 CHECK_CL
+    1B CHECK_CL
+    A CHECK_CL
   LOW ;
-
-\ : CHECK_ROW
-\   DUP 
-\   HIGH  
-\     10 DUP PRESSED 1 = IF 1000 DELAY PRESSED 0 = IF 41 >LCD COUNTER++ THEN ELSE 
-\     16 DUP PRESSED 1 = IF 1000 DELAY PRESSED 0 = IF 33 >LCD COUNTER++ THEN ELSE 
-\     1B DUP PRESSED 1 = IF 1000 DELAY PRESSED 0 = IF 32 >LCD COUNTER++ THEN ELSE 
-\     A DUP PRESSED 1 = IF 1000 DELAY PRESSED 0 = IF 31 >LCD COUNTER++ THEN
-\     THEN THEN THEN THEN
-\   LOW ;
 
 : DETECT
   0 COUNTER !
@@ -256,7 +291,7 @@ VARIABLE COUNTER
     17 CHECK_ROW
     18 CHECK_ROW
     19 CHECK_ROW
-  COUNTER 10 =  UNTIL ;
+  COUNTER 3 =  UNTIL ;
 : SETUP 
   SETUP_I2C 
   SETUP_KEYPAD 
@@ -264,4 +299,5 @@ VARIABLE COUNTER
   WELCOME
   30000 DELAY 
   CLEAR
-  DETECT ;
+  DETECT
+  ;
