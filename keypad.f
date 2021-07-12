@@ -125,7 +125,6 @@ VARIABLE COUNTER
     ELSE DROP DROP DROP 
   THEN ;
 
-
 \ Checks the given Row by setting it to HIGH, checking its Columns and setting it to LOW finally
 \ Example usage -> 12 CHECK_ROW (Checks the first row)
 \               -> 17 CHECK_ROW (Checks the second row)

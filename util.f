@@ -70,16 +70,26 @@ VARIABLE DEVS DEV_NO CELLS ALLOT
 \ Example: DEVS 3 C_ADDR @ -> Fetches the value of the element on the 4th position (index 3)
 : C_ADDR CELLS + ;
 
-\ Decides if a given command is OK or not checking the OK_C
+\ Decides if a given command is OK or not by checking the OK_C
 \   on the position OK_POS of that command
 \ Example: 64B# ?CMD
 : ?CMD
-  OK_POS D_CMD @ OK_C = ;
+  D_CMDS OK_POS C_ADDR @ OK_C = ;
 
 \ Resets the D_CMDS VARIABLE by writing 0's
 : RES_CMD 
-  OK_POS 1 + 0 DO 0 I D_CMD ! LOOP ;
+  OK_POS 1 + 0 DO 0 D_CMDS I C_ADDR ! LOOP ;
 
+\ Fetches the first 2 values stored in D_CMDS and converts it to a device number
+\ Example: D_CMDS-0 contains 3
+\          D_CMDS-1 contains E
+\          Leaves 3E on TOS
+: 2DEV 
+  D_CMDS 0 C_ADDR @ 4 LSHIFT
+  D_CMDS 1 C_ADDR @ 
+  OR ;
 
-: D_ON 
-  D_CMDS 0 C_ADDR @  ;
+\ Example: ON_C D_SET -> Sets the device on
+\          OFF_C D_SET -> Sets the device off
+: D_SET 
+  R> DEVS 2DEV C_ADDR >R ! ;
