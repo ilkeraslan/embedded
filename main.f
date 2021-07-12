@@ -5,5 +5,5 @@
   WELCOME
   30000 DELAY 
   CLEAR
-  DETECT
-  ;
+  RES_CMD
+  DETECT ;

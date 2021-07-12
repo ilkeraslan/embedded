@@ -34,3 +34,52 @@ DEVBASE 200058 + CONSTANT GPFEN0
 
 : DELAY 
   BEGIN 1 - DUP 0 = UNTIL DROP ;
+
+\ The constant to define the position of a command validator
+\ For this project a valid command contains a special character in the 3rd position of that command
+\ Example: 12A# is a valid command as it contains the predefined special character on the 3rd position
+\          06B3 is not a valid command as it does not contain the predefined special character
+\             on the 3rd position
+CONSTANT OK_POS 3
+
+\ The constant to define the position of a command validator
+\ For this project a valid command contains a special character in the 3rd position of that command
+\ Example: 12A# is a valid command as it contains the special character # (23 in HEX) on the 3rd position
+\          06B* is not a valid command as it does not contain the predefined special character # (23 in HEX)
+\             on the 3rd position
+CONSTANT OK_C 23
+
+\ Contants to define on and off operations
+\ Example: 12A# -> Device no 12 is ON (A is 41 in HEX)
+\          12B# -> Device no 12 is OFF (B is 42 in HEX)
+CONSTANT ON_C 41
+CONSTANT OFF_C 42
+
+\ The number of the devices that the system supports (in HEX)
+\ Example: DEV_NO A will define the CONSTANT as 10 in DECIMAL
+CONSTANT DEV_NO 99
+
+\ Variable to store the (OK_POS + 1) length commands
+\ Changing the OK_POS CONSTANT will provide different length arrays
+VARIABLE D_CMDS OK_POS CELLS ALLOT
+
+\ Variable to store (DEV_NO + 1) number of devices (in HEX)
+VARIABLE DEVS DEV_NO CELLS ALLOT
+
+\ Takes the VARIABLE name and the index of the element to leave its memory address on TOS
+\ Example: DEVS 3 C_ADDR @ -> Fetches the value of the element on the 4th position (index 3)
+: C_ADDR CELLS + ;
+
+\ Decides if a given command is OK or not checking the OK_C
+\   on the position OK_POS of that command
+\ Example: 64B# ?CMD
+: ?CMD
+  OK_POS D_CMD @ OK_C = ;
+
+\ Resets the D_CMDS VARIABLE by writing 0's
+: RES_CMD 
+  OK_POS 1 + 0 DO 0 I D_CMD ! LOOP ;
+
+
+: D_ON 
+  D_CMDS 0 C_ADDR @  ;
