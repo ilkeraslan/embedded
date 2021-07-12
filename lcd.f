@@ -10,6 +10,18 @@
   4D >LCD
   45 >LCD ;
 
+\ Prints "not valid" to screen
+: NOT_VALID 
+  4E >LCD
+  4F >LCD
+  54 >LCD
+  20 >LCD
+  56 >LCD
+  41 >LCD
+  4C >LCD
+  49 >LCD
+  44 >LCD ;
+
 \ Clears the screen
 : CLEAR
   101 >LCD ;
