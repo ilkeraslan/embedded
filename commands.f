@@ -57,8 +57,16 @@ VARIABLE DEVS DEV_NO CELLS ALLOT
   THEN THEN ;
 
 \ Resets the D_CMDS VARIABLE by writing 0's
+\ Note: OK_POS 1 + 0 DO 0 D_CMDS I C_ADDR ! LOOP instruction for this definition does not work
+\       otherwise it would have been more Forth style
+\ TODO: test this
+VARIABLE AUX_I
 : RES_CMD 
-  OK_POS 1 + 0 DO 0 D_CMDS I C_ADDR ! LOOP ;
+  0 AUX_I !
+  BEGIN 
+  D_CMDS AUX_I @ C_ADDR ! 
+  AUX_I @ 1 + AUX_I !
+  AUX_I @ OK_POS 1 + = UNTIL ;
 
 \ Fetches the first 2 values stored in D_CMDS and converts it to a device number
 \ Example: D_CMDS-0 contains 3
