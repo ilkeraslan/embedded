@@ -139,6 +139,9 @@ VARIABLE COUNTER
     A CHECK_CL
   LOW ;
 
+: ?CTR 
+  COUNTER @ 3 =  ;
+
 \ The main WORD to detect any press/release event and eventually to emit the 
 \   corresponding char to LCD
 \ This WORD is called automatically when the SETUP WORD is called,
@@ -150,4 +153,4 @@ VARIABLE COUNTER
     17 CHECK_ROW
     18 CHECK_ROW
     19 CHECK_ROW
-  COUNTER 3 =  UNTIL ;
+  ?CTR UNTIL ;
