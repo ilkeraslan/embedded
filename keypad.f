@@ -71,49 +71,48 @@ VARIABLE COUNTER
 \ Finally store the emitted HEX value to that address
 \ Example: 42 EMIT_STORE -> Prints B on LCD and stores it into D_CMDS[COUNTER_current_value]
 : EMIT_STORE 
-  DUP >LCD 
+  DUP 500 DELAY >LCD 
   D_CMDS
-  COUNTER @ 
-  C_ADDR ! ;
+  COUNTER @ CELLS + ! ;
 
 \ Emits one of the chars found on Column-1 checking the given Row number
 \ Example: 12 EMITC1 emits A (41 in HEX) to lcd
 \          19 EMITC1 emits D (44 in HEX) to lcd
 : EMITC1 
-  DUP 12 = IF 41 >LCD DROP ELSE 
-  DUP 17 = IF 42 >LCD DROP ELSE 
-  DUP 18 = IF 43 >LCD DROP ELSE 
-  19 = IF 44 >LCD 
+  DUP 12 = IF 41 DUP EMIT_STORE DROP ELSE 
+  DUP 17 = IF 42 DUP EMIT_STORE DROP ELSE 
+  DUP 18 = IF 43 DUP EMIT_STORE DROP ELSE 
+  19 = IF 44 DUP EMIT_STORE 
   THEN THEN THEN THEN ;
 
 \ Emits one of the chars found on Column-2 checking the given Row number
 \ Example: 12 EMITC2 emits 3 (33 in HEX) to lcd
 \          17 EMITC2 emits 6 (36 in HEX) to lcd
 : EMITC2 
-  DUP 12 = IF 33 >LCD DROP ELSE 
-  DUP 17 = IF 36 >LCD DROP ELSE 
-  DUP 18 = IF 39 >LCD DROP ELSE 
-  19 = IF 23 >LCD 
+  DUP 12 = IF 33 DUP EMIT_STORE DROP ELSE 
+  DUP 17 = IF 36 DUP EMIT_STORE DROP ELSE 
+  DUP 18 = IF 39 DUP EMIT_STORE DROP ELSE 
+  19 = IF 23 DUP EMIT_STORE 
   THEN THEN THEN THEN ;
 
 \ Emits one of the chars found on Column-3 checking the given Row number
 \ Example: 18 EMITC3 emits 8 (38 in HEX) to lcd
 \          19 EMITC3 emits 0 (30 in HEX) to lcd
 : EMITC3 
-  DUP 12 = IF 32 >LCD DROP ELSE 
-  DUP 17 = IF 35 >LCD DROP ELSE 
-  DUP 18 = IF 38 >LCD DROP ELSE 
-  19 = IF 30 >LCD 
+  DUP 12 = IF 32 DUP EMIT_STORE DROP ELSE 
+  DUP 17 = IF 35 DUP EMIT_STORE DROP ELSE 
+  DUP 18 = IF 38 DUP EMIT_STORE DROP ELSE 
+  19 = IF 30 DUP EMIT_STORE 
   THEN THEN THEN THEN ;
 
 \ Emits one of the chars found on Column-4 checking the given Row number
 \ Example: 12 EMITC4 emits 1 (31 in HEX) to lcd
 \          18 EMITC4 emits 7 (37 in HEX) to lcd
 : EMITC4 
-  DUP 12 = IF 31 >LCD DROP ELSE 
-  DUP 17 = IF 34 >LCD DROP ELSE 
-  DUP 18 = IF 37 >LCD DROP ELSE 
-  19 = IF 2A >LCD 
+  DUP 12 = IF 31 DUP EMIT_STORE DROP ELSE 
+  DUP 17 = IF 34 DUP EMIT_STORE DROP ELSE 
+  DUP 18 = IF 37 DUP EMIT_STORE DROP ELSE 
+  19 = IF 2A DUP EMIT_STORE 
   THEN THEN THEN THEN ;
 
 \ Emits the given Row-Column char combination using the corresponding EMITC1/C2/C3/C4 WORD
@@ -155,6 +154,9 @@ VARIABLE COUNTER
 : ?CTR 
   COUNTER @ 4 = ;
 
+: RES_CTR 
+  0 COUNTER ! ;
+
 \ The main WORD to detect any press/release event and eventually to emit the 
 \   corresponding char to LCD
 \ This WORD is called automatically when the SETUP WORD is called,
@@ -166,5 +168,4 @@ VARIABLE COUNTER
     17 CHECK_ROW
     18 CHECK_ROW
     19 CHECK_ROW
-  ?CTR UNTIL 
-  2000 DELAY CLEAR ;
+  ?CTR UNTIL ;

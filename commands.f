@@ -55,7 +55,6 @@ VARIABLE DEVS DEV_NO CELLS ALLOT
 \ Resets the D_CMDS VARIABLE by writing 0's
 \ Note: OK_POS 1 + 0 DO 0 D_CMDS I CELLS + ! LOOP instruction for this definition does not work
 \       otherwise it would have been more Forth style
-\ TODO: test this
 VARIABLE AUX_I
 : RES_CMD 
   0 AUX_I !
@@ -83,7 +82,10 @@ VARIABLE AUX_I
 : XCMD 
   ?CMD IF 
     OP_TYPE D_SET 
+    1000 DELAY 4F >LCD
+    1000 DELAY 4B >LCD
   ELSE 
     CLEAR 
     1000 DELAY NOT_VALID 
+    3000 DELAY CLEAR
   THEN ;

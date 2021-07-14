@@ -1,8 +1,8 @@
-## Embedded Docs
+# Embedded Docs
 
 As it has already been defined in `README`, this project tries to simulate the [Home Assistant](https://www.home-assistant.io/) using a RaspberryPi. At the moment the devices are supposed to be already connected to the system, and the system is only responsible for their management. In a future version, *hopefully* device detection and device connection will be addressed as well.
 
-### Development Ambient
+## Development Ambient
 
 The project has been realized using the following hardware and environment:
 - [PijFORTHOS](https://github.com/organix/pijFORTHos)
@@ -25,17 +25,32 @@ The other machine would be another Linux distribution, a MacOS, or a Windows. On
 
 This project has been developed using a modified version of *PijFORTHOS* by the [Professor Daniele Peri](https://www.unipa.it/persone/docenti/p/daniele.peri) for research purposes. Although it is possible to build the code on the Raspberry Pi, I preferred the Cross-Compilation for ease of debugging. As specified in the `README.md`, `make` the project on your machine and transfer it to the Raspberry Pi using the USB to UART serial interface. This technique enables the developer to interact with the Raspberry Pi dynamically, meaning that the developer may use the defined WORDs or define new WORDs on his/her machine and execute them while the program is running.
 
-#### USB to UART Serial Interface
+### USB to UART Serial Interface
+
+From the [Wikipedia Page](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter):
+> A universal asynchronous receiver-transmitter (UART /ˈjuːɑːrt/) is a computer hardware device for asynchronous serial communication in which the data format and transmission speeds are configurable. It sends data bits one by one, from the least significant to the most significant, framed by start and stop bits so that precise timing is handled by the communication channel.
+
+UART is used to build a serial comunication channel between a peripheral device serial port and another device. The n bytes of data is decomposed into bits and each bit is transmitted sequentially. When the destination device receives the transmitted bits, they are composed into complete bytes. Although using the shift register of the UART it is possible to select between the serial and parallel transmition. Mostly the least significant bit is transmitted first, but there may be some exceptions.
+
+Each character to send is mapped into:
+- logic low start bit
+- data bits
+- parity bit
+- stop bit/s
+
+In this manner the receiver is able to read the start bit to decide if a new character is being transmitted, read the data bits, check the parity and finally read the stop bit/s to understand the transmission has ended.
+
+During the development the UART interface has been used to send/receive data to/from Raspberry Pi and to define new WORDs in order to interact with the kernel.
+
+### LCD
+
+
+
+### I/O expander for I2C-bus
 // TODO
 
-#### LCD
+### Keypad
 // TODO
 
-#### I/O expander for I2C-bus
-// TODO
-
-#### Keypad
-// TODO
-
-### Software
+## Software
 // TODO
