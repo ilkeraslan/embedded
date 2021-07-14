@@ -212,18 +212,14 @@ VARIABLE D_CMDS OK_POS CELLS ALLOT
 \ Variable to store (DEV_NO + 1) number of devices (in HEX)
 VARIABLE DEVS DEV_NO CELLS ALLOT
 
-\ Takes the VARIABLE name and the index of the element to leave its memory address on TOS
-\ Example: DEVS 3 C_ADDR @ -> Fetches the value of the element on the 4th position (index 3)
-: C_ADDR CELLS + ;
-
 \ Decides if a given command is OK or not by checking the OK_C
 \   on the position OK_POS of that command
 \ Example: 64B# ?CMD
 : ?CMD
-  D_CMDS OK_POS C_ADDR @ OK_C = ;
+  D_CMDS OK_POS CELLS + @ OK_C = ;
 
 : OP_TYPE 
-  D_CMDS OP_POS C_ADDR @ DUP 
+  D_CMDS OP_POS CELLS + @ DUP 
   ON_C = IF 
     DROP ON_C
   ELSE OFF_C = IF 
@@ -231,14 +227,14 @@ VARIABLE DEVS DEV_NO CELLS ALLOT
   THEN THEN ;
 
 \ Resets the D_CMDS VARIABLE by writing 0's
-\ Note: OK_POS 1 + 0 DO 0 D_CMDS I C_ADDR ! LOOP instruction for this definition does not work
+\ Note: OK_POS 1 + 0 DO 0 D_CMDS I CELLS + ! LOOP instruction for this definition does not work
 \       otherwise it would have been more Forth style
 \ TODO: test this
 VARIABLE AUX_I
 : RES_CMD 
   0 AUX_I !
   BEGIN 
-  D_CMDS AUX_I @ C_ADDR ! 
+  D_CMDS AUX_I @ CELLS + ! 
   AUX_I @ 1 + AUX_I !
   AUX_I @ OK_POS 1 + = UNTIL ;
 
@@ -247,15 +243,15 @@ VARIABLE AUX_I
 \          D_CMDS-1 contains E
 \          Leaves 3E on TOS
 : 2DEV 
-  D_CMDS 0 C_ADDR @ 4 LSHIFT
-  D_CMDS 1 C_ADDR @ 
+  D_CMDS 0 CELLS + @ 4 LSHIFT
+  D_CMDS 1 CELLS + @ 
   OR ;
 
 \ Sets a device on/off
 \ Example: ON_C D_SET -> Sets the device on
 \          OFF_C D_SET -> Sets the device off
 : D_SET 
-  R> DEVS 2DEV C_ADDR >R ! ;
+  R> DEVS 2DEV CELLS + >R ! ;
 
 \ Executes the given command if it is valid, else prints NOT_VALID on the screen
 : XCMD 
@@ -433,7 +429,8 @@ VARIABLE COUNTER
     17 CHECK_ROW
     18 CHECK_ROW
     19 CHECK_ROW
-  ?CTR UNTIL ;
+  ?CTR UNTIL 
+  CLEAR ;
 : SETUP 
   SETUP_I2C 
   SETUP_KEYPAD 
