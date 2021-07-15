@@ -18,7 +18,7 @@ The project has been realized using the following hardware and environment:
 - 4x4 Keypad Matrix
 - Breadboard and Jumper Wires
 
-Although this project has been developed with a Raspberry Pi 4B, theoretically it should be able to run on a [Raspberry Pi 3](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/) as well. However it has not been tested effectively so you should always keep that in mind. To do that you may change the definition `FE000000 CONSTANT DEVBASE` to `3F000000 CONSTANT DEVBASE`.
+Although this project has been developed with a Raspberry Pi 4B, theoretically it should be able to run on a [Raspberry Pi 3](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/) as well. However it has not been tested effectively so you should always keep that in mind. To do that you may change the definition `FE000000 CONSTANT DEVBASE` to `3F000000 CONSTANT DEVBASE` and you should be good to go.
 
 The other machine would be another Linux distribution, a MacOS, or a Windows. On Windows you may use [Putty](https://www.putty.org/) in order to interact with the Raspberry Pi, whereas on a MacOS you should be able to use [Minicom](https://formulae.brew.sh/formula/minicom) and [Picocom](https://formulae.brew.sh/formula/picocom).
 
@@ -105,6 +105,7 @@ This sequence of commands are interpreted as the *Function Set* command (0x20 = 
 ![Function Set](https://user-images.githubusercontent.com/33685811/125796047-7c024fdb-3333-44a1-b8ce-67d84374d436.png)
 > ![Function Set Instructions](https://user-images.githubusercontent.com/33685811/125796234-cc9f899c-035d-4a70-87cd-5848cb6b4f32.png) ![Function Set Instructions-2](https://user-images.githubusercontent.com/33685811/125796435-ea23d4fa-6e44-44d9-b65b-2a2e8b13f876.png)
 
+After this setup you can send any ASCII character by typing its HEX code and calling `>LCD` word, like `57 >LCD` (which sends `W` to LCD).
 
 ### Keypad
 
@@ -131,4 +132,16 @@ Please note that the pins which control the rows and columns may be changed as y
 In this project the Keypad setup has been done defining the WORD `SETUP_KEYPAD` which includes each step explained above.
 
 ## Software
-// TODO
+
+As emphasized before, this software *only* manages the *supposedly connected devices* in a house. For instance, you have already connected your garage door controller to the system, and the system **simulates** some operations for you. For the time being those operations are:
+- Open (A key)
+- Close (B key)
+- Get State (C key).
+
+As one may imagine each operation is controlled by pressing the corresponding key. `A` opens the door, `B` closes the door, and `C` returns its state by telling you if ifs open or closed. But of course it's not enough to press the operation key only, we need the device id too, as we want to manage more than a garage door.
+
+Thus the command to interact with the given device has the format: `12A#`. The first two characters represent the device id that we want to control (in HEX), the third character is the operation that we want to execute, and the last character is the **GO** command that we give to the software. So this command means *Open the device with the id 18(12 in HEX)*.
+
+As you may have noticed the system is quite extensible. One may assign other meanings to other patterns in order to do different operations. A command which ends with `*` may reset the given device, a command which starts with the operation code followed by the device id may remove the device from the system, or a command like `45#*` may add the new device with the id 45 to the system.
+
+During these commands the system is always interactive, and gives feedback to the user about the pressed key. 

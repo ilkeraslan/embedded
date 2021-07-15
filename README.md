@@ -1,12 +1,12 @@
 ## Embedded
-An Embedded Systems project which tries to simulate the [Home Assistant](https://www.home-assistant.io/) using a RaspberryPi.
+An Embedded Systems project which tries to simulate the [Home Assistant](https://www.home-assistant.io/) using a RaspberryPi. The documentation is provided in the `docs.md` file.
 
 ### How To Use
 - Install Minicom and Picocom
 ```
 sudo apt-get install minicom && sudo apt-get install picocom
 ```
-- Make the project
+- Make the project (if it is not the first time you are compiling the project, **you should delete the file `embedded.f` first** as it will append new data there, which will only create problems)
 ```
 make
 ```
