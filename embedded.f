@@ -200,6 +200,7 @@ CONSTANT OK_C 23
 \          12B# -> Device no 12 is OFF
 CONSTANT ON_C A
 CONSTANT OFF_C B
+CONSTANT GET_C C
 
 \ The number of the devices that the system supports (in HEX)
 \ Example: DEV_NO A will define the CONSTANT as 10 in DECIMAL
@@ -209,8 +210,8 @@ CONSTANT DEV_NO 99
 \ Changing the OK_POS CONSTANT will provide different length arrays
 VARIABLE D_CMDS OK_POS CELLS ALLOT
 
-\ Variable to store (DEV_NO + 1) number of devices (in HEX)
-VARIABLE DEVS DEV_NO CELLS ALLOT
+\ Variable to store (DEV_NO) number of devices (in HEX)
+VARIABLE DEVS DEV_NO 1 - CELLS ALLOT
 
 \ Decides if a given command is OK or not by checking the OK_C
 \   on the position OK_POS of that command
@@ -221,10 +222,12 @@ VARIABLE DEVS DEV_NO CELLS ALLOT
 : OP_TYPE 
   D_CMDS OP_POS CELLS + @ DUP 
   ON_C = IF 
-    DROP ON_C
-  ELSE OFF_C = IF 
-    OFF_C
-  THEN THEN ;
+    DROP >OPEN
+  ELSE DUP OFF_C = IF 
+    DROP >CLOSE
+  ELSE GET_C = IF
+    <STATE
+  THEN THEN THEN ;
 
 \ Resets the D_CMDS VARIABLE by writing 0's
 \ Note: OK_POS 1 + 0 DO 0 D_CMDS I CELLS + ! LOOP instruction for this definition does not work
@@ -242,7 +245,7 @@ VARIABLE AUX_I
 \          D_CMDS-1 contains E
 \          Leaves 3E on TOS
 : 2DEV 
-  D_CMDS 0 CELLS + @ 4 LSHIFT
+  D_CMDS @ 4 LSHIFT
   D_CMDS 1 CELLS + @ 
   OR ;
 
@@ -250,12 +253,27 @@ VARIABLE AUX_I
 \ Example: ON_C D_SET -> Sets the device on
 \          OFF_C D_SET -> Sets the device off
 : D_SET 
-  R> DEVS 2DEV CELLS + >R ! ;
+  >R DEVS 2DEV CELLS + R> SWAP ! ;
+
+\ Opens the given device
+\ Example: 1A >OPEN
+: >OPEN 
+  ON_C D_SET ;
+
+\ Closes the given device
+\ Example: 1A >CLOSE
+: >CLOSE 
+  OFF_C D_SET ;
+
+\ Returns the state of the given device, which tells you if it's open or closed
+\ Example: 1A <STATE
+: <STATE 
+  DEVS 2DEV CELLS + @ ;
 
 \ Executes the given command if it is valid, else prints NOT_VALID on the screen
 : XCMD 
   ?CMD IF 
-    OP_TYPE D_SET 
+    OP_TYPE 
     1000 DELAY 4F >LCD
     1000 DELAY 4B >LCD
   ELSE 
