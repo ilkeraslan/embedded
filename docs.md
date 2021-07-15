@@ -14,7 +14,7 @@ The project has been realized using the following hardware and environment:
 - A machine with `Ubuntu 20.04.2 LTS` distribution
 - [FT232RL](https://ftdichip.com/wp-content/uploads/2020/08/DS_FT232R.pdf) USB to UART serial interface
 - [Tinsharp TC1602B-01 VER:00](http://www.tinsharp.com/product/327.html) 16x2 LCD
-- [Philips PCF8574](https://dtsheet.com/doc/204293/philips-pcf8574) Remote 8-bit I/O expander for I2C-bus
+- [Philips PCF8574AT](https://dtsheet.com/doc/204293/philips-pcf8574) Remote 8-bit I/O expander for I2C-bus
 - 4x4 Keypad Matrix
 - Breadboard and Jumper Wires
 
@@ -50,10 +50,61 @@ During the development the UART interface has been used to send/receive data to/
 
 ### LCD
 
+![LCD](https://user-images.githubusercontent.com/33685811/125774432-3a0370f0-314d-4d3c-b2d8-cf1e72fccb3c.png)
+
+This project uses an LCD 16x2 (16 rows x 2 columns) with an integrated I2C module. The LCD is capable of displaying ASCII characters, letters, numbers, and symbols. In fact, we comunicate with the LCD sending the ASCII code of the character that we want to show, in HEX.
+
+![I2C_LCD](https://user-images.githubusercontent.com/33685811/125774556-1398fa26-20d7-46d0-b778-b694edf0eac4.png)
+
+Using an I2C interface that connects the serial input and parallel output mode to LCD allows us to use only 4 lines in order to comunicate with the LCD. The IC chip used is `PCF8574AT` and we should detect its address in order to establish a comunication. 
+
+The I2C bus is a:
+- synchronous
+- multi-master
+- multi-slave
+- packet switched
+- single-ended
+- serial computer
+bus used for attaching lower-speed peripheral integrated circuits to processors/microcontrollers in short distance.
+
+Serial Data (SDA) and Serial Clock (SCL) wires carry the data in an I2C bus. Using the Open-Drain for Bidirectional Communication we may transfer a low by pulling the line to low or a high by leaving the line floating, which makes the pull-up resistor pull the voltage up.
+
+The I2C bus works as following:
+- Master sends:
+  - START condition
+  - Slave address (7-bit)
+  - 0 for writing (1-bit)
+- Slave sends ACK bit to acknowledge
+- Master sends the register address to write into
+- Slave sends ACK bit to acknowledge
+- Master starts sending the actual data
+- Master sends STOP condition
+
+In this case the master is the Raspberry Pi, and the slave is I2C LCD module.
+
+While the SCL is high, a high-to-low transition on the SDA line defines a `Start` condition, and a low-to-high transition on the SDA line defines a `Stop` condition. During each clock pulse of the SCL, one data bit is transmitted via SDA. Any number of data bytes may be transferred between `Start` and `Stop` conditions. Data is transferred sending the most significant bit first.
+
+Each byte of data gets an ACK (acknowledge) response from the receiver. In order to receive the ACK, the sender must release the SDA line, so that the receiver may pull down the SDA line to become stable low during the high phase of the ACK clock period.
 
 
-### I/O expander for I2C-bus
-// TODO
+The WORD `>I2C` writes a byte to the I2C bus to the Broadcom Serial Controller (BSC) master address. In this project we use the second master address, which we obtain adding the `804008` offset to the base device address. The word `>LCD` controls if we wants to send a command or a piece of data, and sends the expander a byte of which the bits are positioned in a significant way. For instance, the command `2C >LCD` produces (0x2C = 0010 1100) on the I2C bus:
+```
+D7=0, D6=0, D5=1, D4=0, Backlight=1, Enable=1, R/W’=0, RS=0
+```
+The command `28 >LCD` produces (0x2C = 0010 1100) on the I2C bus:
+```
+D7=0, D6=0, D5=1, D4=0, Backlight=1, Enable=0, R/W’=0, RS=0
+```
+
+This sequence of commands are interpreted as the *Function Set* command (0x20 = 0010 0000) with the parameter `DL=0`. As a result, we get to switch the bus to the 4-bit mode. Using the 4-bit mode, in order to send 1 byte to LCD we need to write 4 times on the I2C bus:
+- 4 most significant bits with `Enable = 1`
+- 4 most significant bits with `Enable = 0`
+- 4 least significant bits with `Enable = 1`
+- 4 least significant bits with `Enable = 0`
+
+![Function Set](https://user-images.githubusercontent.com/33685811/125796047-7c024fdb-3333-44a1-b8ce-67d84374d436.png)
+> ![Function Set Instructions](https://user-images.githubusercontent.com/33685811/125796234-cc9f899c-035d-4a70-87cd-5848cb6b4f32.png) ![Function Set Instructions-2](https://user-images.githubusercontent.com/33685811/125796435-ea23d4fa-6e44-44d9-b65b-2a2e8b13f876.png)
+
 
 ### Keypad
 
