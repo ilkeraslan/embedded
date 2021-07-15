@@ -138,6 +138,8 @@ As emphasized before, this software *only* manages the *supposedly connected dev
 - Close (B key)
 - Get State (C key).
 
+Foe each operation you can also use the defined WORDS from your terminal: `>OPEN`, `>CLOSE`, `<STATE`.
+
 As one may imagine each operation is controlled by pressing the corresponding key. `A` opens the door, `B` closes the door, and `C` returns its state by telling you if ifs open or closed. But of course it's not enough to press the operation key only, we need the device id too, as we want to manage more than a garage door.
 
 Thus the command to interact with the given device has the format: `12A#`. The first two characters represent the device id that we want to control (in HEX), the third character is the operation that we want to execute, and the last character is the **GO** command that we give to the software. So this command means *Open the device with the id 18(12 in HEX)*.
