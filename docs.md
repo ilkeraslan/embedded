@@ -146,4 +146,14 @@ Thus the command to interact with the given device has the format: `12A#`. The f
 
 As you may have noticed the system is quite extensible. One may assign other meanings to other patterns in order to do different operations. A command which ends with `*` may reset the given device, a command which starts with the operation code followed by the device id may remove the device from the system, or a command like `45#*` may add the new device with the id 45 to the system.
 
-During these commands the system is always interactive, and gives feedback to the user about the pressed key. 
+During these commands the system is always interactive, and gives feedback to the user about the pressed key. At the end of each command, the validity of the command is controlled. If the command is not valid, user gets a `NOT VALID` feedback on the LCD, and the command is not taken into account. If it is a valid command, the operation on the given command gets realized with an eventual feedback to user.
+
+## Project Structure
+
+Each file contains the WORDS correlated to its name. More specifically:
+- `util.f` contains WORDS for utility instructions
+- `i2c.f` contains WORDS to use the I2C bus
+- `lcd.f` contains WORDS to comunicate with the LCD
+- `commands.f` contains WORDS to control and execute the user commands
+- `keypad.f` contains WORDS to check keypad events
+- `main.f` contains a WORD to do the main setup
