@@ -1,3 +1,66 @@
+
+: ':' [ CHAR : ] LITERAL ;
+: ';' [ CHAR ; ] LITERAL ;
+: '(' [ CHAR ( ] LITERAL ;
+: ')' [ CHAR ) ] LITERAL ;
+: '"' [ CHAR " ] LITERAL ;
+: '.' [ CHAR . ] LITERAL ;
+
+: ( IMMEDIATE 1 BEGIN KEY DUP '(' = IF DROP 1+ ELSE ')' = IF 1- THEN THEN DUP 0= UNTIL DROP ;
+: SPACES BEGIN DUP 0> WHILE SPACE 1- REPEAT DROP ;
+: WITHIN -ROT OVER <= IF > IF TRUE ELSE FALSE THEN ELSE 2DROP FALSE THEN ;
+: ALIGNED 3 + 3 INVERT AND ;
+: ALIGN HERE @ ALIGNED HERE ! ;
+: C, HERE @ C! 1 HERE +! ;
+: S" IMMEDIATE ( -- addr len )
+	STATE @ IF
+		' LITS , HERE @ 0 ,
+		BEGIN KEY DUP '"'
+                <> WHILE C, REPEAT
+		DROP DUP HERE @ SWAP - 4- SWAP ! ALIGN
+	ELSE
+		HERE @
+		BEGIN KEY DUP '"'
+                <> WHILE OVER C! 1+ REPEAT
+		DROP HERE @ - HERE @ SWAP
+	THEN
+;
+
+: ." IMMEDIATE ( -- )
+	STATE @ IF
+		[COMPILE] S" ' TELL ,
+	ELSE
+		BEGIN KEY DUP '"' = IF DROP EXIT THEN EMIT AGAIN
+	THEN
+;
+
+
+: JF-HERE   HERE ;
+: JF-CREATE   CREATE ;
+: JF-FIND   FIND ;
+: JF-WORD   WORD ;
+
+: HERE   JF-HERE @ ;
+: ALLOT   HERE + JF-HERE ! ;
+
+: [']   ' LIT , ; IMMEDIATE
+: '   JF-WORD JF-FIND >CFA ;
+
+: CELL+  4 + ;
+
+: ALIGNED   3 + 3 INVERT AND ;
+: ALIGN JF-HERE @ ALIGNED JF-HERE ! ;
+
+: DOES>CUT   LATEST @ >CFA @ DUP JF-HERE @ > IF JF-HERE ! ;
+
+: CREATE   JF-WORD JF-CREATE DOCREATE , ;
+: (DODOES-INT)  ALIGN JF-HERE @ LATEST @ >CFA ! DODOES> ['] LIT ,  LATEST @ >DFA , ;
+: (DODOES-COMP)  (DODOES-INT) ['] LIT , , ['] FIP! , ;
+: DOES>COMP   ['] LIT , HERE 3 CELLS + , ['] (DODOES-COMP) , ['] EXIT , ;
+: DOES>INT   (DODOES-INT) LATEST @ HIDDEN ] ;
+: DOES>   STATE @ 0= IF DOES>INT ELSE DOES>COMP THEN ; IMMEDIATE
+
+DROP
 \ GPIO utils
 HEX
 FE000000 CONSTANT DEVBASE
@@ -208,19 +271,21 @@ CONSTANT DEV_NO 99
 
 \ Variable to store the (OK_POS + 1) length commands
 \ Changing the OK_POS CONSTANT will provide different length arrays
-VARIABLE D_CMDS OK_POS CELLS ALLOT
+CREATE D_CMDS
+D_CMDS OK_POS 4 * ALLOT
 
 \ Variable to store (DEV_NO) number of devices (in HEX)
-VARIABLE DEVS DEV_NO 1 - CELLS ALLOT
+CREATE DEVS
+DEVS DEV_NO 1 - 4 * ALLOT
 
 \ Decides if a given command is OK or not by checking the OK_C
 \   on the position OK_POS of that command
 \ Example: 64B# ?CMD
 : ?CMD
-  D_CMDS OK_POS CELLS + @ OK_C = ;
+  D_CMDS OK_POS 4 * + @ OK_C = ;
 
 : OP_TYPE 
-  D_CMDS OP_POS CELLS + @ DUP 
+  D_CMDS OP_POS 4 * + @ DUP 
   ON_C = IF 
     DROP >OPEN
   ELSE DUP OFF_C = IF 
@@ -230,13 +295,11 @@ VARIABLE DEVS DEV_NO 1 - CELLS ALLOT
   THEN THEN THEN ;
 
 \ Resets the D_CMDS VARIABLE by writing 0's
-\ Note: OK_POS 1 + 0 DO 0 D_CMDS I CELLS + ! LOOP instruction for this definition does not work
-\       otherwise it would have been more Forth style
-VARIABLE AUX_I
+CREATE AUX_I
 : RES_CMD 
   0 AUX_I !
   BEGIN 
-  D_CMDS AUX_I @ CELLS + ! 
+  D_CMDS AUX_I @ 4 * + ! 
   AUX_I @ 1 + AUX_I !
   AUX_I @ OK_POS 1 + = UNTIL ;
 
@@ -246,14 +309,14 @@ VARIABLE AUX_I
 \          Leaves 3E on TOS
 : 2DEV 
   D_CMDS @ 4 LSHIFT
-  D_CMDS 1 CELLS + @ 
+  D_CMDS CELL+ @ 
   OR ;
 
 \ Sets a device on/off
 \ Example: ON_C D_SET -> Sets the device on
 \          OFF_C D_SET -> Sets the device off
 : D_SET 
-  >R DEVS 2DEV CELLS + R> SWAP ! ;
+  >R DEVS 2DEV 4 * + R> SWAP ! ;
 
 \ Opens the given device
 \ Example: 1A >OPEN
@@ -268,7 +331,7 @@ VARIABLE AUX_I
 \ Returns the state of the given device, which tells you if it's open or closed
 \ Example: 1A <STATE
 : <STATE 
-  DEVS 2DEV CELLS + @ ;
+  DEVS 2DEV 4 * + @ ;
 
 \ Executes the given command if it is valid, else prints NOT_VALID on the screen
 : XCMD 
@@ -340,7 +403,7 @@ VARIABLE AUX_I
 : PRESSED 
   TPIN 1 = IF 1 ELSE 0 THEN ;
 
-VARIABLE COUNTER
+CREATE COUNTER
 
 \ Increments the COUNTER variable by 1
 : COUNTER++ 
@@ -356,7 +419,7 @@ VARIABLE COUNTER
 : EMIT_STORE 
   DUP 500 DELAY >LCD 
   D_CMDS
-  COUNTER @ CELLS + ! ;
+  COUNTER @ CELL+ * ! ;
 
 \ Emits one of the chars found on Column-1 checking the given Row number
 \ Example: 12 EMITC1 emits A (41 in HEX) to lcd

@@ -57,7 +57,7 @@
 : PRESSED 
   TPIN 1 = IF 1 ELSE 0 THEN ;
 
-VARIABLE COUNTER
+CREATE COUNTER
 
 \ Increments the COUNTER variable by 1
 : COUNTER++ 
@@ -73,7 +73,7 @@ VARIABLE COUNTER
 : EMIT_STORE 
   DUP 500 DELAY >LCD 
   D_CMDS
-  COUNTER @ CELLS + ! ;
+  COUNTER @ CELL+ * ! ;
 
 \ Emits one of the chars found on Column-1 checking the given Row number
 \ Example: 12 EMITC1 emits A (41 in HEX) to lcd
