@@ -6,4 +6,5 @@
   30000 DELAY 
   CLEAR
   RES_CMD
-  DETECT ;
+  DETECT
+  XCMD ;

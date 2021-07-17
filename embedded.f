@@ -272,36 +272,11 @@ CONSTANT DEV_NO 99
 \ Variable to store the (OK_POS + 1) length commands
 \ Changing the OK_POS CONSTANT will provide different length arrays
 CREATE D_CMDS
-D_CMDS OK_POS 4 * ALLOT
+D_CMDS OK_POS CELLS ALLOT
 
 \ Variable to store (DEV_NO) number of devices (in HEX)
 CREATE DEVS
-DEVS DEV_NO 1 - 4 * ALLOT
-
-\ Decides if a given command is OK or not by checking the OK_C
-\   on the position OK_POS of that command
-\ Example: 64B# ?CMD
-: ?CMD
-  D_CMDS OK_POS 4 * + @ OK_C = ;
-
-: OP_TYPE 
-  D_CMDS OP_POS 4 * + @ DUP 
-  ON_C = IF 
-    DROP >OPEN
-  ELSE DUP OFF_C = IF 
-    DROP >CLOSE
-  ELSE GET_C = IF
-    <STATE
-  THEN THEN THEN ;
-
-\ Resets the D_CMDS VARIABLE by writing 0's
-CREATE AUX_I
-: RES_CMD 
-  0 AUX_I !
-  BEGIN 
-  D_CMDS AUX_I @ 4 * + ! 
-  AUX_I @ 1 + AUX_I !
-  AUX_I @ OK_POS 1 + = UNTIL ;
+DEVS DEV_NO 1 - CELLS ALLOT
 
 \ Fetches the first 2 values stored in D_CMDS and converts it to a device number
 \ Example: D_CMDS-0 contains 3
@@ -332,6 +307,31 @@ CREATE AUX_I
 \ Example: 1A <STATE
 : <STATE 
   DEVS 2DEV 4 * + @ ;
+
+\ Decides if a given command is OK or not by checking the OK_C
+\   on the position OK_POS of that command
+\ Example: 64B# ?CMD
+: ?CMD
+  D_CMDS OK_POS 4 * + @ OK_C = ;
+
+: OP_TYPE 
+  D_CMDS OP_POS 4 * + @ DUP 
+  ON_C = IF 
+    DROP >OPEN
+  ELSE DUP OFF_C = IF 
+    DROP >CLOSE
+  ELSE GET_C = IF
+    <STATE
+  THEN THEN THEN ;
+
+\ Resets the D_CMDS VARIABLE by writing 0's
+CREATE AUX_I
+: RES_CMD 
+  0 AUX_I !
+  BEGIN 
+  D_CMDS AUX_I @ 4 * + ! 
+  AUX_I @ 1 + AUX_I !
+  AUX_I @ OK_POS 1 + = UNTIL ;
 
 \ Executes the given command if it is valid, else prints NOT_VALID on the screen
 : XCMD 
@@ -523,4 +523,5 @@ CREATE COUNTER
   30000 DELAY 
   CLEAR
   RES_CMD
-  DETECT ;
+  DETECT
+  XCMD ;
