@@ -5,6 +5,8 @@
   WELCOME
   30000 DELAY 
   CLEAR
-  RES_CMD
-  DETECT
-  XCMD ;
+  BEGIN
+    RES_CMD
+    DETECT
+    XCMD
+  1 0 = UNTIL ;
