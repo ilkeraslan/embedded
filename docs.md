@@ -91,7 +91,7 @@ The WORD `>I2C` writes a byte to the I2C bus to the Broadcom Serial Controller (
 ```
 D7=0, D6=0, D5=1, D4=0, Backlight=1, Enable=1, R/W’=0, RS=0
 ```
-The command `28 >LCD` produces (0x2C = 0010 1100) on the I2C bus:
+The command `28 >LCD` produces (0x2C = 0010 1000) on the I2C bus:
 ```
 D7=0, D6=0, D5=1, D4=0, Backlight=1, Enable=0, R/W’=0, RS=0
 ```
