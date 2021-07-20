@@ -151,6 +151,7 @@ During these commands the system is always interactive, and gives feedback to th
 ## Project Structure
 
 Each file contains the WORDS correlated to its name. More specifically:
+- `se-ans.f` contains WORDS for standard ANSI Forth compatibility (courtesy of Professor Daniele Peri)
 - `util.f` contains WORDS for utility instructions
 - `i2c.f` contains WORDS to use the I2C bus
 - `lcd.f` contains WORDS to comunicate with the LCD
