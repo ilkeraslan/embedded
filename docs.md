@@ -20,7 +20,7 @@ The project has been realized using the following hardware and environment:
 
 Although this project has been developed with a Raspberry Pi 4B, theoretically it should be able to run on a [Raspberry Pi 3](https://www.raspberrypi.org/products/raspberry-pi-3-model-b/) as well. However it has not been tested effectively so you should always keep that in mind. To do that you may change the definition `FE000000 CONSTANT DEVBASE` to `3F000000 CONSTANT DEVBASE` and you should be good to go.
 
-The other machine would be another Linux distribution, a MacOS, or a Windows. On Windows you may use [Putty](https://www.putty.org/) in order to interact with the Raspberry Pi, whereas on a MacOS you should be able to use [Minicom](https://formulae.brew.sh/formula/minicom) and [Picocom](https://formulae.brew.sh/formula/picocom).
+The machine that we use for development would be another Linux distribution, a MacOS, or a Windows. On Windows you may use [Putty](https://www.putty.org/) in order to interact with the Raspberry Pi, whereas on a MacOS you should be able to use [Minicom](https://formulae.brew.sh/formula/minicom) and [Picocom](https://formulae.brew.sh/formula/picocom).
 
 *PijFORTHOS* is a interpreter used to interact with a Raspberry Pi, as specified in its documentation:
 > pijFORTHos is a bare-metal [FORTH](https://www.forth.com/starting-forth/) interpreter for the Raspberry Pi (original, Model B).
@@ -87,7 +87,7 @@ While the SCL is high, a high-to-low transition on the SDA line defines a `Start
 Each byte of data gets an ACK (acknowledge) response from the receiver. In order to receive the ACK, the sender must release the SDA line, so that the receiver may pull down the SDA line to become stable low during the high phase of the ACK clock period.
 
 
-The WORD `>I2C` writes a byte to the I2C bus to the Broadcom Serial Controller (BSC) master address. In this project we use the second master address, which we obtain adding the `804008` offset to the base device address. The word `>LCD` controls if we wants to send a command or a piece of data, and sends the expander a byte of which the bits are positioned in a significant way. For instance, the command `2C >LCD` produces (0x2C = 0010 1100) on the I2C bus:
+The WORD `>I2C` writes a byte to the I2C bus to the Broadcom Serial Controller (BSC) master address. In this project we use the second master address, which we obtain adding the `804008` offset to the base device address. The word `>LCD` controls if we want to send a command or a piece of data, and sends the expander a byte of which the bits are positioned in a significant way. For instance, the command `2C >LCD` produces (0x2C = 0010 1100) on the I2C bus:
 ```
 D7=0, D6=0, D5=1, D4=0, Backlight=1, Enable=1, R/W’=0, RS=0
 ```

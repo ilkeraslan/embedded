@@ -54,17 +54,17 @@ DEVS DEV_NO 1 - CELLS ALLOT
 \ Example: ON_C D_SET -> Sets the device on
 \          OFF_C D_SET -> Sets the device off
 : D_SET 
-  >R DEVS 2DEV 4 * + R> SWAP ! ;
+  >R DEVS 2DEV 4 * + R> SWAP ;
 
 \ Opens the given device
 \ Example: 1A >OPEN
 : >OPEN 
-  ON_C D_SET ;
+  ON_C D_SET ! ;
 
 \ Closes the given device
 \ Example: 1A >CLOSE
 : >CLOSE 
-  OFF_C D_SET ;
+  OFF_C D_SET ! ;
 
 \ Returns the state of the given device, which tells you if it's open or closed
 \ Example: 1A <STATE
